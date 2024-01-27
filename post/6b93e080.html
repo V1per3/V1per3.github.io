@@ -1,0 +1,316 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>CMU15-445 bustub Project4：Concurrency Control | V1per3</title><meta name="keywords" content="CMU15-445"><meta name="author" content="V1per3"><meta name="copyright" content="V1per3"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="写在前面参考资料：  https:&#x2F;&#x2F;zhuanlan.zhihu.com&#x2F;p&#x2F;592700870 https:&#x2F;&#x2F;www.bilibili.com&#x2F;video&#x2F;BV1bQ4y1Y7iT https:&#x2F;&#x2F;zhuanlan.zhihu.com&#x2F;p&#x2F;592700870  历时整整两个月，总算完成了15445的学习，收获很大，总体上说，project4的难度是比较低的，个人感觉2 &gt;&gt; 3">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CMU15-445 bustub Project4：Concurrency Control">
+<meta property="og:url" content="https://v1per3.github.io/post/6b93e080.html">
+<meta property="og:site_name" content="V1per3">
+<meta property="og:description" content="写在前面参考资料：  https:&#x2F;&#x2F;zhuanlan.zhihu.com&#x2F;p&#x2F;592700870 https:&#x2F;&#x2F;www.bilibili.com&#x2F;video&#x2F;BV1bQ4y1Y7iT https:&#x2F;&#x2F;zhuanlan.zhihu.com&#x2F;p&#x2F;592700870  历时整整两个月，总算完成了15445的学习，收获很大，总体上说，project4的难度是比较低的，个人感觉2 &gt;&gt; 3">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://v1per3.github.io/img/CMU15445.png">
+<meta property="article:published_time" content="2024-01-26T06:37:05.249Z">
+<meta property="article:modified_time" content="2024-01-27T03:08:36.492Z">
+<meta property="article:author" content="V1per3">
+<meta property="article:tag" content="CMU15-445">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://v1per3.github.io/img/CMU15445.png"><link rel="shortcut icon" href="/img/fav.jpg"><link rel="canonical" href="https://v1per3.github.io/post/6b93e080"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"languages":{"hits_empty":"找不到您查询的内容：${query}"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'CMU15-445 bustub Project4：Concurrency Control',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2024-01-27 11:08:36'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.2.0"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/avatar1.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">20</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于作者</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/CMU15445.png')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">V1per3</a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于作者</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">CMU15-445 bustub Project4：Concurrency Control</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2024-01-26T06:37:05.249Z" title="发表于 2024-01-26 14:37:05">2024-01-26</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2024-01-27T03:08:36.492Z" title="更新于 2024-01-27 11:08:36">2024-01-27</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/CMU15-445/">CMU15-445</a></span></div><div class="meta-secondline"></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h2 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h2><p>参考资料：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/592700870">https://zhuanlan.zhihu.com/p/592700870</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1bQ4y1Y7iT">https://www.bilibili.com/video/BV1bQ4y1Y7iT</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/592700870">https://zhuanlan.zhihu.com/p/592700870</a></li>
+</ul>
+<p>历时整整两个月，总算完成了15445的学习，收获很大，总体上说，project4的难度是比较低的，个人感觉2 &gt;&gt; 3 &gt; 4 ≈ 1。</p>
+<p>Project4: Concurrency Control主要是依据lecture中的2PL以及三种事务隔离机制实现一个锁管理器，并且要具备死锁检测的功能。主要分为三个task：</p>
+<ul>
+<li>Lock Manager ：锁管理器，利用 2PL 实现并发控制。支持 REPEATABLE_READ、READ_COMMITTED 和 READ_UNCOMMITTED 三种隔离级别，支持 SHARED、EXCLUSIVE、INTENTION_SHARED、INTENTION_EXCLUSIVE 和 SHARED_INTENTION_EXCLUSIVE 五种锁，支持 table 和 row 两种锁粒度，支持锁升级。</li>
+<li>Deadlock Detection：死锁检测，运行在一个 background 线程，每间隔一定时间检测当前是否出现死锁，并挑选合适的事务将其 abort 以解开死锁。</li>
+<li>Concurrent Query Execution：修改之前实现的 SeqScan、Insert 和 Delete 算子，加上适当的锁以实现并发的查询。</li>
+</ul>
+<h2 id="一、前置知识"><a href="#一、前置知识" class="headerlink" title="一、前置知识"></a>一、前置知识</h2><h3 id="1-1-Serializable"><a href="#1-1-Serializable" class="headerlink" title="1.1 Serializable"></a>1.1 Serializable</h3><p>当事务并发时，假如事务并发执行的顺序能够等于这些事务按某种顺序顺序执行的结果，那么称这些事务的并发是 serializable schedule，称这两个 schedule 是 Serializable Schedule。事务并发执行的顺序很难确保说是等价于某种顺序执行，只能依照不同的并发策略而定。</p>
+<h3 id="1-2-Two-Phase-Locking（2PL）"><a href="#1-2-Two-Phase-Locking（2PL）" class="headerlink" title="1.2 Two Phase Locking（2PL）"></a>1.2 Two Phase Locking（2PL）</h3><p>通过并发策略就能够管理事务，是他们自动保证一个 schedule 是 serializable。不难想到，保证 schedule 正确性的方法就是合理的加锁 (locks) 策略，2PL 就是其中之一。</p>
+<p><strong>注意：</strong>2PL 保证正确性的方式是通过获得锁的顺序实现的，也就说我们没办法强制要求事务按照某个 serial schedule 并发，<strong>只能保证最终结果是正确的。</strong></p>
+<p>2PL，顾名思义，有两个阶段：<code>growing</code> 和 <code>shrinking</code>：</p>
+<ul>
+<li><code>growing</code>： 事务可以按需获取某条数据的锁，lock manager 决定同意或者拒绝。一旦开始释放锁就进了 shrinking 阶段 </li>
+<li><code>shrinking</code>：阶段中，事务只能释放之前获取的锁，不能获得新锁，即一旦开始释放锁，之后就只能释放锁。</li>
+</ul>
+<p>但是 2PL 一个问题在于：假如一个事务 T1 在 shrinking 阶段释放锁后，这个锁被其他事务 T2 所获取，这个时候 T1 还是未提交的，但是 T2 能够读取到 T1 修改的数据。最终 T1 终止了，T2 读取到的数据就不复存在了，也就是脏读。</p>
+<p>那么这个时候所有读到 T1 修改过的数据的事务都需要 abort，由于会递归终止，因此也称为 <strong>级联中止</strong> (cascading aborts)。</p>
+<h3 id="1-3-Transaction-isolation-mechanism"><a href="#1-3-Transaction-isolation-mechanism" class="headerlink" title="1.3 Transaction isolation mechanism"></a>1.3 Transaction isolation mechanism</h3><p>按照等级(<strong>隔离程度</strong>)由低到高：</p>
+<ul>
+<li>Read uncommitted (未提交读)</li>
+<li>Read committed (提交读)</li>
+<li>Repeatable read (可重复读) (mysql默认)</li>
+<li>Serializable (可序列化)</li>
+</ul>
+<p><img src="/img/TransactionIso.png" alt="TransactionIso"></p>
+<p>√代表可能出现的问题<br><strong>注意：</strong> 可以采用提高事务的隔离级别的方式来解决脏读、不可重复读、幻读等问题, 但与此同时, 事务的隔离级别越高, 并发能力也就越低; 所以, 还需要读者根据业务需要进行权衡</p>
+<h4 id="1-3-1-未提交读-Read-uncommitted"><a href="#1-3-1-未提交读-Read-uncommitted" class="headerlink" title="1.3.1 未提交读 (Read uncommitted)"></a>1.3.1 未提交读 (Read uncommitted)</h4><ul>
+<li><p><strong>定义</strong><br><code>是最低的隔离级别, 在这种事务隔离级别下, 一个事务可以读到另外一个事务未提交的数据</code></p>
+</li>
+<li><p><strong>数据库加锁情况(实现原理)</strong><br><code>事务在读数据的时候并未对数据加锁</code><br><code>事务在修改数据的时候只对数据增加行级共享锁</code></p>
+</li>
+<li><p><strong>现象解释</strong><br><code>事务1读取某行记录时, 事务2也能对这行记录进行读取、更新, 并且因为事务一并未对数据增加任何锁</code><br><code>当事务2也对该记录进行更新时, 事务1再次读取该记录, 能读到事务2对该记录的修改版本 (因为事务2只增加了共享读锁, 事务1可以再增加共享读锁读取数据), 即使该修改尚未被提交, 若此时事务2回滚, 那事务1读到的就脏数据了, 这就引发了脏读现象</code><br><code>事务1更新某行记录时, 事务2不能对这行记录做更新, 直到事务1结束 (因为事务1对数据增加了共享读锁, 事务2不能增加排他写锁进行数据的修改)</code></p>
+</li>
+</ul>
+<h4 id="1-3-2-提交读-Read-committed"><a href="#1-3-2-提交读-Read-committed" class="headerlink" title="1.3.2 提交读 (Read committed)"></a>1.3.2 提交读 (Read committed)</h4><ul>
+<li><p><strong>定义</strong><br><code>可以理解成都已提交, 在一个事务修改数据过程中, 如果事务还没提交, 其他事务不能读该数据</code></p>
+</li>
+<li><p><strong>数据库加锁情况</strong><br><code>事务对当前被读取的数据增加行级共享锁(读到时才加锁), 一旦读完该行, 立即释放该行行级共享锁</code><br><code>事务在更新某数据的瞬间(在更新的瞬间), 必须先对其加行级排它锁, 直到事务结束才释放</code></p>
+</li>
+<li><p><strong>现象解释</strong><br><code>事务1在读取某行记录的整个过程中, 事务2都可以对该行记录进行读取 (因为事务一对该行记录增加行级共享锁的情况下, 事务二同样可以对该数据增加共享锁来读数据)</code><br><code>事务1读取某行的一瞬间, 事务2不能修改该行数据, 但是, 只要事务1读取完改行数据, 事务2就可以对该行数据进行修改 (事务一在读取的一瞬间会对数据增加共享锁, 任何其他事务都不能对该行数据增加排他锁; 但是事务一只要读完该行数据, 就会释放行级共享锁, 一旦锁释放, 事务二就可以对数据增加排他锁并修改数据)</code><br><code>事务1更新某行记录时, 事务2不能对这行记录做更新, 直到事务1结束 (事务一在更新数据的时候, 会对该行数据增加排他锁, 知道事务结束才会释放锁, 所以, 在事务二没有提交之前, 事务一都能不对数据增加共享锁进行数据的读取; 所以, 提交读可以解决脏读的现象)</code></p>
+</li>
+</ul>
+<h4 id="1-3-3-可重复读-Repeatable-reads"><a href="#1-3-3-可重复读-Repeatable-reads" class="headerlink" title="1.3.3 可重复读 (Repeatable reads)"></a>1.3.3 可重复读 (Repeatable reads)</h4><ul>
+<li><p><strong>定义</strong><br><code>由于提交读隔离级别会产生不可重复读的读现象, 所以比提交读更高一个级别的隔离级别就可以解决不可重复读的问题, 这种隔离级别就叫可重复读 </code></p>
+</li>
+<li><p><strong>数据库锁情况</strong><br><code>事务在读取某数据的瞬间 (就是开始读取的瞬间), 必须先对其加行级共享锁, 直到事务结束才释放</code><br><code>事务在更新某数据的瞬间 (就是发生更新的瞬间), 必须先对其加行级排他锁, 直到事务结束才释放</code></p>
+</li>
+<li><p><strong>现象解释</strong><br><code>事务1在读取某行记录的整个过程中, 事务2都可以对该行记录进行读取 (因为事务一对该行记录增加行级共享锁的情况下, 事务二同样可以对该数据增加共享锁来读数据)</code><br><code>事务1在读取某行记录的整个过程中, 事务2都不能修改该行数据 (事务一在读取的整个过程会对数据增加共享锁, 直到事务提交才会释放锁, 所以整个过程中, 任何其他事务都不能对该行数据增加排他锁; 所以, 可重复读能够解决不可重复读的读现象)</code><br><code>事务1更新某行记录时, 事务2不能对这行记录做更新, 直到事务1结束 (事务一在更新数据的时候, 会对该行数据增加排他锁, 知道事务结束才会释放锁, 所以, 在事务二没有提交之前, 事务一都能不对数据增加共享锁进行数据的读取; 所以, 提交读可以解决脏读的现象)</code></p>
+</li>
+</ul>
+<h4 id="1-3-4-可序列化-Serializable"><a href="#1-3-4-可序列化-Serializable" class="headerlink" title="1.3.4 可序列化 (Serializable)"></a>1.3.4 可序列化 (Serializable)</h4><ul>
+<li><p><strong>定义</strong><br><code>是最高的隔离级别, 前面三种隔离级别都无法解决的幻读, 在可序列化的隔离级别中可以解决</code></p>
+</li>
+<li><p><strong>数据库锁情况</strong><br><code>事务在读取数据时, 必须先对其加表级共享锁, 直到事务结束才释放</code><br><code>事务在更新数据时, 必须先对其加表级排他锁, 直到事务结束才释放</code></p>
+</li>
+<li><p><strong>现象解释</strong><br><code>事务1正在读取A表中的记录时, 则事务2也能读取A表, 但不能对A表做更新、新增、删除, 直到事务1结束 (因为事务一对表增加了表级共享锁, 其他事务只能增加共享锁读取数据, 不能进行其他任何操作)</code><br><code>事务1正在更新A表中的记录时, 则事务2不能读取A表的任意记录, 更不可能对A表做更新、新增、删除, 直到事务1结束 (事务一对表增加了表级排他锁, 其他事务不能对表增加共享锁或排他锁, 也就无法进行任何操作)</code></p>
+</li>
+<li><p>序列化事务产生的效果:</p>
+</li>
+<li><ul>
+<li>无法读取其他事务已经修改单位提交的记录</li>
+</ul>
+</li>
+<li><ul>
+<li>在当前事务完成之前, 其他事务不能修改当前事务已经读取的记录</li>
+</ul>
+</li>
+<li><ul>
+<li>在当前事务完成之前, 其他事务插入的新记录, 其索引键值不能在当前事务的任何语句所读取的索引键范围中</li>
+</ul>
+</li>
+</ul>
+<p>在本项目中，并不涉及可序列化这一隔离级别，因此我们只需关注前三种隔离级别即可。</p>
+<h2 id="二、Lock-Manager"><a href="#二、Lock-Manager" class="headerlink" title="二、Lock Manager"></a>二、Lock Manager</h2><p>Lock Manager 的结构：</p>
+<p><img src="/img/lockmanager.png" alt="lockmanager.png"></p>
+<p>Lock Manager 的作用是处理事务发送的锁请求，例如有一个 SeqScan 算子需要扫描某张表，其所在事务就需要对这张表加 S 锁。而加读锁这个动作需要由 Lock Manager 来完成。事务先对向 Lock Manager 发起加 S 锁请求，Lock Manager 对请求进行处理。如果发现此时没有其他的锁与这个请求冲突，则授予其 S 锁并返回。如果存在冲突，例如其他事务持有这张表的 X 锁，则 Lock Manager 会阻塞此请求（即阻塞此事务），直到能够授予 S 锁，再授予并返回。</p>
+<h3 id="2-1-Lock"><a href="#2-1-Lock" class="headerlink" title="2.1 Lock"></a>2.1 Lock</h3><h4 id="1-检查事务的状态："><a href="#1-检查事务的状态：" class="headerlink" title="1.检查事务的状态："></a>1.检查事务的状态：</h4><p>若 txn 处于 Abort&#x2F;Commit 状态，抛逻辑异常，不应该有这种情况出现。<br>若 txn 处于 Shrinking 状态，则需要检查 txn 的隔离级别是否允许当前锁请求类型：</p>
+<ul>
+<li>READ_UNCOMMITTE 隔离级别中只允许使用X和IX锁(即只加写锁)</li>
+<li>READ_UNCOMMITTE 隔离级别下收缩状态下不允许获得X和IX锁（写锁）</li>
+<li>READ_COMMITTED 隔离级别在收缩状态下只允许使用IS、S锁（即读锁）</li>
+<li>REPEATABLE_READ 隔离级别在收缩状态下不允许使用锁</li>
+</ul>
+<p>如果是对row加锁，要注意不能加意向锁，同时要检查是否持有 row 对应的 table lock。</p>
+<h4 id="2-从map处获取对应的lock-request-queue"><a href="#2-从map处获取对应的lock-request-queue" class="headerlink" title="2.从map处获取对应的lock_request_queue"></a>2.从map处获取对应的lock_request_queue</h4><p>从 table_lock_map_ 中获取 table 对应的 lock request queue。注意需要对 map 加锁，并且为了提高并发性，在获取到 queue 之后立即释放 map 的锁。若 queue 不存在则创建。</p>
+<h4 id="3-检查锁请求是否为锁升级"><a href="#3-检查锁请求是否为锁升级" class="headerlink" title="3.检查锁请求是否为锁升级"></a>3.检查锁请求是否为锁升级</h4><ul>
+<li>遍历队列查看有没有与当前事务 id 相同的请求。如果存在这样的请求，则代表当前事务在此前已经得到了在此资源上的一把锁，接下来可能需要锁升级</li>
+<li>判断此前授予锁类型是否与当前请求锁类型相同。若相同，则代表是一次重复的请求，直接返回。否则进行下一步检查。</li>
+<li>判断当前资源上是否有另一个事务正在尝试升级（queue-&gt;upgrading_ &#x3D;&#x3D; INVALID_TXN_ID）。若有，则终止当前事务，抛出 UPGRADE_CONFLICT 异常。因为不允许多个事务在同一资源上同时尝试锁升级。</li>
+<li>判断升级锁的类型和之前锁是否兼容，不能反向升级。<strong>允许的升级规则</strong>：IS -&gt; [S, X, IX, SIX] ，S -&gt; [X, SIX]， IX -&gt; [X, SIX]， SIX -&gt; [X]</li>
+<li>进行锁升级。</li>
+<li><ul>
+<li>释放当前已经持有的锁，包括lock_manager中的锁记录和事务中的锁记录。</li>
+</ul>
+</li>
+<li><ul>
+<li>升级的锁作为一个新的请求加入队列，插入的位置是当前第一个没有被授予的锁的位置。这里插入的位置是根据优先级规则来确定的。如果队列中存在锁升级请求，若锁升级请求正为当前请求，则优先级最高。否则代表其他事务正在尝试锁升级，优先级高于当前请求。若队列中不存在锁升级请求，则遍历队列。如果，当前请求是第一个 waiting 状态的请求，则代表优先级最高。如果当前请求前面还存在其他 waiting 请求，则要判断当前请求是否前面的 waiting 请求兼容。若兼容，则仍可以视为优先级最高。若存在不兼容的请求，则优先级不为最高。</li>
+</ul>
+</li>
+<li><ul>
+<li>并在 queue 中标记当前事务正在尝试升级</li>
+</ul>
+</li>
+<li>若不是锁升级，则为平凡的锁请求，加入到request_queue_即可，<strong>在此处可以将 LockRequest的裸指针优化为智能指针。</strong></li>
+</ul>
+<h4 id="4-尝试获取锁"><a href="#4-尝试获取锁" class="headerlink" title="4.尝试获取锁"></a>4.尝试获取锁</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">//等待直到新锁被授予。</span><br><span class="line">      while (!GrantLock(upgrade_lock_request, lock_request_queue)) &#123;</span><br><span class="line">        //在 GrantLock() 中，Lock Manager 会判断是否可以满足当前锁请求。若可以满足，则返回 true，事务成功获取锁，并退出循环。</span><br><span class="line">        //若不能满足，则返回 false，事务暂时无法获取锁，在 wait 处阻塞，</span><br><span class="line">        //等待资源状态变化时被唤醒并再次判断是否能够获取锁。资源状态变化指的是什么？其他事务释放了锁。</span><br><span class="line">        lock_request_queue-&gt;cv_.wait(lock);</span><br><span class="line">        if (txn-&gt;GetState() == TransactionState::ABORTED) &#123;</span><br><span class="line">          lock_request_queue-&gt;upgrading_ = INVALID_TXN_ID;</span><br><span class="line">          lock_request_queue-&gt;request_queue_.remove(upgrade_lock_request);</span><br><span class="line">          lock_request_queue-&gt;cv_.notify_all();</span><br><span class="line">          return false;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br></pre></td></tr></table></figure>
+<p>GrantLock()判断锁请求lock_request是否可被授予。依次判断lock_request_queue中已经授予的锁是否和当前向获取的锁冲突，当全部不冲突才返回true，只要队列中有任意一个granted的锁与当前请求的锁冲突，则false。</p>
+<h3 id="2-2-Unlock"><a href="#2-2-Unlock" class="headerlink" title="2.2 Unlock"></a>2.2 Unlock</h3><p>Unlock的逻辑比较简单</p>
+<ul>
+<li>确保当前事务中持有该表的锁</li>
+<li>table lock，在释放时需要先检查其下的所有 row lock 是否已经释放。</li>
+<li>获取对应的 lock_request_queue</li>
+<li>遍历请求队列，找到 unlock 对应的 granted 请求</li>
+<li>在锁成功释放后，调用 cv_.notify_all() 唤醒所有阻塞在此 table 上的事务</li>
+<li>找到对应的请求后，根据事务的隔离级别和锁类型修改其状态。</li>
+<li><ul>
+<li>当隔离级别为 REPEATABLE_READ 时，S&#x2F;X 锁释放会使事务进入 Shrinking 状态。</li>
+</ul>
+</li>
+<li><ul>
+<li>当为 READ_COMMITTED 时，只有 X 锁释放使事务进入 Shrinking 状态。</li>
+</ul>
+</li>
+<li><ul>
+<li>当为 READ_UNCOMMITTED 时，X 锁释放使事务 Shrinking，S 锁不会出现。</li>
+</ul>
+</li>
+</ul>
+<h2 id="二、Deadlock-Detection"><a href="#二、Deadlock-Detection" class="headerlink" title="二、Deadlock Detection"></a>二、Deadlock Detection</h2><ul>
+<li><p>此task利用一个unordered_map类型的waits_for_来表示事务之间的等待关系。wait for 是一个有向图，t1-&gt;t2 即代表 t1 事务正在等待 t2 事务释放资源。当 wait for 图中存在环时，即代表出现死锁，需要挑选事务终止以打破死锁。</p>
+<br>
+</li>
+<li><p>我们并不需要时刻维护 wait for 图，而是在死锁检测线程被唤醒时，根据当前请求队列构建 wait for 图，再通过 wait for 图判断是否存在死锁。当判断完成后，将丢弃当前 wait for 图。下次线程被唤醒时再重新构建。</p>
+<br>
+</li>
+<li><p>最常见的有向图环检测算法包括 DFS 和拓扑排序。在这里我们选用 DFS 来进行环检测。构建 wait for 图时要保证搜索的确定性。始终从 tid 较小的节点开始搜索，在选择邻居时，也要优先搜索 tid 较小的邻居。</p>
+<br></li>
+<li><p>构建 wait for 图的过程是，遍历 table_lock_map 和 row_lock_map 中所有的请求队列，对于每一个请求队列，用一个二重循环将所有满足等待关系的一对 tid 加入 wait for 图的边集。满足等待关系是指，对于两个事务 a 和 b，a 是 waiting 请求，b 是 granted 请求，则生成 a-&gt;b 一条边。</p>
+<br></li>
+<li><p>在发现环后，我们可以得到环上的所有节点。此时我们挑选 youngest 的事务将其终止。youngest 的事务即是tid 最大的事务。</p>
+<br></li>
+<li><p>挑选出 youngest 事务后，将此事务的状态设为 Aborted。并且在请求队列中移除此事务，释放其持有的锁，终止其正在阻塞的请求，并调用 cv_.notify_all() 通知正在阻塞的相关事务。此外，还需移除 wait for 图中与此事务有关的边。不是不用维护 wait for 图，每次使用重新构建吗？这是因为图中可能存在多个环，不是打破一个环就可以直接返回了。需要在死锁检测线程醒来的时候打破当前存在的所有环。</p>
+</li>
+</ul>
+<h2 id="三、Concurrent-Query-Execution"><a href="#三、Concurrent-Query-Execution" class="headerlink" title="三、Concurrent Query Execution"></a>三、Concurrent Query Execution</h2><p>此task是对查询执行的tuple进行并发控制，即对最基本三种算子SeqScan、Insert、Delete进行修改以满足并发控制。</p>
+<h3 id="3-1-SeqScan"><a href="#3-1-SeqScan" class="headerlink" title="3.1 SeqScan"></a>3.1 SeqScan</h3><ul>
+<li>在初始化时 Init()中 进行并发控制，在 READ_UNCOMMITTED 下不用加锁，其余两种隔离级别下需要加锁，需先给表加IS锁</li>
+<li>利用迭代器遍历时 Next()中 对行加锁，并且在遍历到结尾时释放锁，在 READ_COMMITTED 下，在 Next() 函数中，若表中已经没有数据，则提前释放之前持有的锁。在 REPEATABLE_READ 下，在 Commit&#x2F;Abort 时统一释放，无需手动释放。并且先释放行锁再释放表锁。</li>
+<li>实现一个 <code>Predicate pushdown to SeqScan</code> 的优化，即将 Filter 算子结合进 SeqScan 里，这样我们仅需给符合 predicate 的行加上 S 锁，减小加锁数量。利用这个while循环实现：</li>
+<li><ul>
+<li><code>while (plan_-&gt;filter_predicate_ != nullptr &amp;&amp;    !plan_-&gt;filter_predicate_-&gt;Evaluate(tuple, table_info_-&gt;schema_).GetAs&lt;bool&gt;());</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="3-2-Insert-amp-Delete"><a href="#3-2-Insert-amp-Delete" class="headerlink" title="3.2 Insert &amp; Delete"></a>3.2 Insert &amp; Delete</h3><ul>
+<li>Insert &amp; Delete 的操作类似，在 Init() 函数中，为表加上 IX 锁，在Next() 中为行加 X 锁。</li>
+<li>若获取失败则抛 ExecutionException 异常。另外，这里的获取失败不仅是结果返回 false，还有可能是抛出了 TransactionAbort() 异常，例如 UPGRADE_CONFLICT，需要用 try catch 捕获。</li>
+</ul>
+<h2 id="四、Leaderboard-Task"><a href="#四、Leaderboard-Task" class="headerlink" title="四、Leaderboard Task"></a>四、Leaderboard Task</h2><h3 id="4-1-Predicate-Pushdown-to-SeqScan"><a href="#4-1-Predicate-Pushdown-to-SeqScan" class="headerlink" title="4.1 Predicate Pushdown to SeqScan"></a>4.1 Predicate Pushdown to SeqScan</h3><p>在第三节已经讲过此优化，即将 Filter 算子结合进 SeqScan 里，这样我们仅需给符合 predicate 的行加上 S 锁，减小加锁数量。利用一个while循环实现：<code>while (plan_-&gt;filter_predicate_ != nullptr &amp;&amp;            !plan_-&gt;filter_predicate_-&gt;Evaluate(tuple, table_info_-&gt;schema_).GetAs&lt;bool&gt;());</code></p>
+<h3 id="4-2-Implement-UpdateExecutor"><a href="#4-2-Implement-UpdateExecutor" class="headerlink" title="4.2 Implement UpdateExecutor"></a>4.2 Implement UpdateExecutor</h3><p>实现Update这个算子，这样可以在原地直接修改 tuple，不需要先 Delete 再 Insert。利用tableheap中的UpdateTuple这个api实现即可，注意表加 IX 锁，行加 X 锁。返回更新的行的数量。</p>
+<h3 id="4-3-Use-Index"><a href="#4-3-Use-Index" class="headerlink" title="4.3 Use Index"></a>4.3 Use Index</h3><p>修改IndexScan这个算子以让他满足并发控制，利用索引能大幅提高查询效率。具体做法是修改 IndexScan 算子，添加一种单点查询的情况。并在优化规则中尝试匹配形如</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Filter</span><br><span class="line">  |</span><br><span class="line">SeqScan</span><br></pre></td></tr></table></figure>
+<p>的情况，并且 Filter 的 Predicate 形如 x&#x3D;a，其中 x 是 ColumnValue，x 上有索引，a 是 ConstantValue。注意这条优化规则要在 MergeFilterScan 之前执行，否则 Filter 会直接被 Merge 到 SeqScan 里了。或者直接优化已经完成 Merge 的 SeqScan 算子。</p>
+<p>在成功匹配后，提取出 a，并将查询计划更新为执行索引单点查询的 IndexScan 算子，使用 ScanKey(tuple{a}) 查询，需要构造一下包含 a 的 tuple。同样，单点查询时IndexScan 算子中要注意加锁，表 IS 行 S。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>期间由于学业和各种原因断断续续的将近2个月才完成15445，但是收获的东西却比整个学期学校安排的课还多。感谢Andy和各位助教设计了此课程，下一步就是转战6.824了。</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://V1per3.github.io">V1per3</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://v1per3.github.io/post/6b93e080.html">https://v1per3.github.io/post/6b93e080.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="https://V1per3.github.io" target="_blank">V1per3</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/CMU15-445/">CMU15-445</a></div><div class="post_share"><div class="social-share" data-image="/img/CMU15445.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><div class="post-reward"><div class="reward-button"><i class="fas fa-qrcode"></i> 打赏</div><div class="reward-main"><ul class="reward-all"><li class="reward-item"><a href="/img/wechat.png" target="_blank"><img class="post-qr-code-img" src="/img/wechat.png" alt="微信"/></a><div class="post-qr-code-desc">微信</div></li><li class="reward-item"><a href="/img/alipay.jpg" target="_blank"><img class="post-qr-code-img" src="/img/alipay.jpg" alt="支付宝"/></a><div class="post-qr-code-desc">支付宝</div></li></ul></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/post/b4f7d51b.html"><img class="next-cover" src="/img/CMU15445.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">CMU15-445 bustub Project3：Query Execution</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/post/bcba2380.html" title="CMU15-445 bustub Project2：B+ Tree"><img class="cover" src="/img/CMU15445.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-12-13</div><div class="title">CMU15-445 bustub Project2：B+ Tree</div></div></a></div><div><a href="/post/c154d63.html" title="CMU15-445 bustub Project1：Buffer Pool Manager"><img class="cover" src="/img/CMU15445.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-11-29</div><div class="title">CMU15-445 bustub Project1：Buffer Pool Manager</div></div></a></div><div><a href="/post/470938e7.html" title="CMU15-445 bustub Project0：Trie 树实现"><img class="cover" src="/img/CMU15445.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-11-29</div><div class="title">CMU15-445 bustub Project0：Trie 树实现</div></div></a></div><div><a href="/post/b4f7d51b.html" title="CMU15-445 bustub Project3：Query Execution"><img class="cover" src="/img/CMU15445.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2024-01-03</div><div class="title">CMU15-445 bustub Project3：Query Execution</div></div></a></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="/img/avatar1.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">V1per3</div><div class="author-info__description"></div></div><div class="card-info-data site-data is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">20</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">7</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">10</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/V1per3"><i class="fas fa-user-plus"></i><span>Follow Me</span></a><div class="card-info-social-icons is-center"><a class="social-icon" href="https://github.com/V1per3" target="_blank" title="Github"><i class="fab fa-github"></i></a><a class="social-icon" href="mailto:cswuwei777@163.com" target="_blank" title="Email"><i class="fas fa-envelope"></i></a><a class="social-icon" href="tencent://AddContact/?fromId=45&amp;fromSubId=1&amp;subcmd=all&amp;uin=1687683994&amp;website=www.oicqzone.com" target="_blank" title="QQ"><i class="fab fa-qq"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">总得有个自己的窝</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%99%E5%9C%A8%E5%89%8D%E9%9D%A2"><span class="toc-number">1.</span> <span class="toc-text">写在前面</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86"><span class="toc-number">2.</span> <span class="toc-text">一、前置知识</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-Serializable"><span class="toc-number">2.1.</span> <span class="toc-text">1.1 Serializable</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-Two-Phase-Locking%EF%BC%882PL%EF%BC%89"><span class="toc-number">2.2.</span> <span class="toc-text">1.2 Two Phase Locking（2PL）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-Transaction-isolation-mechanism"><span class="toc-number">2.3.</span> <span class="toc-text">1.3 Transaction isolation mechanism</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-3-1-%E6%9C%AA%E6%8F%90%E4%BA%A4%E8%AF%BB-Read-uncommitted"><span class="toc-number">2.3.1.</span> <span class="toc-text">1.3.1 未提交读 (Read uncommitted)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-3-2-%E6%8F%90%E4%BA%A4%E8%AF%BB-Read-committed"><span class="toc-number">2.3.2.</span> <span class="toc-text">1.3.2 提交读 (Read committed)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-3-3-%E5%8F%AF%E9%87%8D%E5%A4%8D%E8%AF%BB-Repeatable-reads"><span class="toc-number">2.3.3.</span> <span class="toc-text">1.3.3 可重复读 (Repeatable reads)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-3-4-%E5%8F%AF%E5%BA%8F%E5%88%97%E5%8C%96-Serializable"><span class="toc-number">2.3.4.</span> <span class="toc-text">1.3.4 可序列化 (Serializable)</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Lock-Manager"><span class="toc-number">3.</span> <span class="toc-text">二、Lock Manager</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Lock"><span class="toc-number">3.1.</span> <span class="toc-text">2.1 Lock</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-%E6%A3%80%E6%9F%A5%E4%BA%8B%E5%8A%A1%E7%9A%84%E7%8A%B6%E6%80%81%EF%BC%9A"><span class="toc-number">3.1.1.</span> <span class="toc-text">1.检查事务的状态：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-%E4%BB%8Emap%E5%A4%84%E8%8E%B7%E5%8F%96%E5%AF%B9%E5%BA%94%E7%9A%84lock-request-queue"><span class="toc-number">3.1.2.</span> <span class="toc-text">2.从map处获取对应的lock_request_queue</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E6%A3%80%E6%9F%A5%E9%94%81%E8%AF%B7%E6%B1%82%E6%98%AF%E5%90%A6%E4%B8%BA%E9%94%81%E5%8D%87%E7%BA%A7"><span class="toc-number">3.1.3.</span> <span class="toc-text">3.检查锁请求是否为锁升级</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-%E5%B0%9D%E8%AF%95%E8%8E%B7%E5%8F%96%E9%94%81"><span class="toc-number">3.1.4.</span> <span class="toc-text">4.尝试获取锁</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Unlock"><span class="toc-number">3.2.</span> <span class="toc-text">2.2 Unlock</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Deadlock-Detection"><span class="toc-number">4.</span> <span class="toc-text">二、Deadlock Detection</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Concurrent-Query-Execution"><span class="toc-number">5.</span> <span class="toc-text">三、Concurrent Query Execution</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-SeqScan"><span class="toc-number">5.1.</span> <span class="toc-text">3.1 SeqScan</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Insert-amp-Delete"><span class="toc-number">5.2.</span> <span class="toc-text">3.2 Insert &amp; Delete</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Leaderboard-Task"><span class="toc-number">6.</span> <span class="toc-text">四、Leaderboard Task</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Predicate-Pushdown-to-SeqScan"><span class="toc-number">6.1.</span> <span class="toc-text">4.1 Predicate Pushdown to SeqScan</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Implement-UpdateExecutor"><span class="toc-number">6.2.</span> <span class="toc-text">4.2 Implement UpdateExecutor</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-Use-Index"><span class="toc-number">6.3.</span> <span class="toc-text">4.3 Use Index</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">7.</span> <span class="toc-text">总结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/post/6b93e080.html" title="CMU15-445 bustub Project4：Concurrency Control"><img src="/img/CMU15445.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="CMU15-445 bustub Project4：Concurrency Control"/></a><div class="content"><a class="title" href="/post/6b93e080.html" title="CMU15-445 bustub Project4：Concurrency Control">CMU15-445 bustub Project4：Concurrency Control</a><time datetime="2024-01-26T06:37:05.249Z" title="发表于 2024-01-26 14:37:05">2024-01-26</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/b4f7d51b.html" title="CMU15-445 bustub Project3：Query Execution"><img src="/img/CMU15445.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="CMU15-445 bustub Project3：Query Execution"/></a><div class="content"><a class="title" href="/post/b4f7d51b.html" title="CMU15-445 bustub Project3：Query Execution">CMU15-445 bustub Project3：Query Execution</a><time datetime="2024-01-03T03:47:14.349Z" title="发表于 2024-01-03 11:47:14">2024-01-03</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/c262e439.html" title="2023年终总结"><img src="/img/backg1.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="2023年终总结"/></a><div class="content"><a class="title" href="/post/c262e439.html" title="2023年终总结">2023年终总结</a><time datetime="2023-12-31T05:32:26.138Z" title="发表于 2023-12-31 13:32:26">2023-12-31</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/bcba2380.html" title="CMU15-445 bustub Project2：B+ Tree"><img src="/img/CMU15445.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="CMU15-445 bustub Project2：B+ Tree"/></a><div class="content"><a class="title" href="/post/bcba2380.html" title="CMU15-445 bustub Project2：B+ Tree">CMU15-445 bustub Project2：B+ Tree</a><time datetime="2023-12-13T01:56:02.447Z" title="发表于 2023-12-13 09:56:02">2023-12-13</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/post/c154d63.html" title="CMU15-445 bustub Project1：Buffer Pool Manager"><img src="/img/CMU15445.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="CMU15-445 bustub Project1：Buffer Pool Manager"/></a><div class="content"><a class="title" href="/post/c154d63.html" title="CMU15-445 bustub Project1：Buffer Pool Manager">CMU15-445 bustub Project1：Buffer Pool Manager</a><time datetime="2023-11-29T07:50:40.148Z" title="发表于 2023-11-29 15:50:40">2023-11-29</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/img/CMU15445.png')"><div id="footer-wrap"><div class="copyright">&copy;2022 - 2024 By V1per3</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据库加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div></div></div><div id="search-mask"></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.min.js"></script><script src="/js/search/local-search.js"></script><div class="js-pjax"></div><script defer="defer" id="ribbon" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/dist/canvas-ribbon.min.js" size="150" alpha="0.6" zIndex="-1" mobile="true" data-click="true"></script></div></body></html>
